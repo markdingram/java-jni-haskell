@@ -1,0 +1,22 @@
+load(
+  "@io_tweag_rules_haskell//haskell:haskell.bzl",
+  "haskell_import",
+  "haskell_library",
+  "haskell_binary"
+)
+
+haskell_import(name = "base")
+
+haskell_library(
+    name = "lib",
+    srcs = ["Fib.hs"],
+    deps = [":base"],
+    visibility = ["//fibjni:__pkg__"],
+)
+
+haskell_binary(
+    name = "main",
+    srcs = ["Main.hs"],
+    compiler_flags = ["-threaded"],
+    deps = [":base", ":lib"],
+)

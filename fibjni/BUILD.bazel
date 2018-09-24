@@ -1,0 +1,31 @@
+
+load(
+  "@io_tweag_rules_haskell//haskell:haskell.bzl",
+  "haskell_import",
+  "haskell_library",
+  "cc_haskell_import",
+)
+
+haskell_import(name = "base")
+
+haskell_library(
+    name = "lib",
+    srcs = ["FibJni.hs"],
+    deps = [":base", "@tweag_inline_java//jni:jni", "//fibhs:lib"],
+)
+
+# temporary shim needed for now, see https://api.haskell.build/haskell/cc.html#cc_haskell_import
+cc_haskell_import(
+    name = "lib_import",
+    dep = ":lib"
+) 
+
+cc_binary(
+    name = "libfib.so",
+    srcs = ["init.c", ":lib_import", "@openjdk//:jni_header", "@openjdk//:jni_md_header"],
+    deps = ["@ghc//:threaded-rts"],
+    linkstatic = 1,
+    linkshared = 1,
+   	visibility = ["//fibjava:__pkg__"],
+    includes = [ "../external/openjdk/include", "../external/openjdk/include/linux" ],
+)
