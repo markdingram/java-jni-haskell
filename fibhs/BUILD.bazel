@@ -1,17 +1,25 @@
+# Set all target’s visibility in this package to "public".
+package(default_visibility = ["//visibility:public"])
+
+# Load rules_haskell rules.
 load(
-  "@io_tweag_rules_haskell//haskell:haskell.bzl",
-  "haskell_import",
-  "haskell_library",
-  "haskell_binary"
+    "@rules_haskell//haskell:defs.bzl",
+    "haskell_toolchain_library",
+    "haskell_library",
+    "haskell_binary",
 )
 
-haskell_import(name = "base")
+# haskell_toolchain_library can access builtin GHC packages
+# and assign them a bazel target name, so that they
+# can be referenced as dependencies.
+haskell_toolchain_library(name = "base")
+
 
 haskell_library(
     name = "lib",
     srcs = ["Fib.hs"],
     deps = [":base"],
-    visibility = ["//fibjni:__pkg__"],
+    # visibility = ["//fibjni:__pkg__"],
 )
 
 haskell_binary(

@@ -1,0 +1,2 @@
+# Has to match up with the name inside tweag_inline_java
+workspace(name = "openjdk")

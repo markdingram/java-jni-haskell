@@ -1,0 +1,37 @@
+# Set all target’s visibility in this package to "public".
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_java//java:defs.bzl", "java_import", "java_runtime", "java_toolchain")
+load(
+    "@bazel_tools//tools/jdk:default_java_toolchain.bzl",
+    "java_runtime_files",
+)
+
+genrule(
+    name = "jni_md_header",
+    srcs = ["@bazel_tools//tools/jdk:jni_md_header-linux"],
+    outs = ["jni_md.h"],
+    cmd = "cp -f $< $@",
+)
+
+genrule(
+    name = "jni_header",
+    srcs = ["@bazel_tools//tools/jdk:jni_header"],
+    outs = ["jni.h"],
+    cmd = "cp -f $< $@",
+)
+
+cc_library(
+    name = "lib",
+    srcs = [
+        ":jni_header",
+        ":jni_md_header"
+    ],
+    hdrs = [
+        ":jni_header",
+        ":jni_md_header",
+    ],
+    includes = ["."],
+    strip_include_prefix = ".",
+    linkstatic = 1
+)
