@@ -9,7 +9,7 @@ load(
 
 genrule(
     name = "jni_md_header",
-    srcs = ["@bazel_tools//tools/jdk:jni_md_header-linux"],
+    srcs = ["@bazel_tools//tools/jdk:jni_md_header-darwin"],
     outs = ["jni_md.h"],
     cmd = "cp -f $< $@",
 )

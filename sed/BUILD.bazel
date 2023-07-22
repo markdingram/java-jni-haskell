@@ -1,0 +1,8 @@
+package(default_visibility = ["//visibility:public"])
+
+genrule(
+    name = "bin",
+    srcs = [],
+    outs = ["sed"],
+    cmd = "cp /usr/bin/sed $@",
+)
