@@ -7,23 +7,12 @@ local_repository(
     path = "./openjdk",
 )
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-    name = "fmeum_rules_jni",
-    sha256 = "9a387a066f683a8aac4d165917dc7fe15ec2a20931894a97e153a9caab6123ca",
-    strip_prefix = "rules_jni-0.4.0",
-    url = "https://github.com/fmeum/rules_jni/archive/refs/tags/v0.4.0.tar.gz",
-)
-
-load("@fmeum_rules_jni//jni:repositories.bzl", "rules_jni_dependencies")
-
-rules_jni_dependencies()
-
 local_repository(
     name = "sed",
     path = "./sed",
 )
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 
 # Load the repository rule to download an http archive.
@@ -33,11 +22,12 @@ load(
 )
 
 # Download rules_haskell and make it accessible as "@rules_haskell".
+# upgrade to pick up a fix for https://github.com/tweag/rules_haskell/issues/1832
 http_archive(
     name = "rules_haskell",
-    sha256 = "2a07b55c30e526c07138c717b0343a07649e27008a873f2508ffab3074f3d4f3",
-    strip_prefix = "rules_haskell-0.16",
-    url = "https://github.com/tweag/rules_haskell/archive/refs/tags/v0.16.tar.gz",
+    sha256 = "26f71338e1dad10d8026ed447f65406ab0fe44d81d36fb6a8813be6efcc294f1",
+    strip_prefix = "rules_haskell-c5335e62829e0e08d7986457a97eb94886081d78",
+    url = "https://github.com/tweag/rules_haskell/archive/c5335e62829e0e08d7986457a97eb94886081d78.tar.gz",
 )
 
 load(
@@ -58,6 +48,25 @@ rules_haskell_toolchains(
     version = "9.2.5",
 )
 
+# TODO: Remove when tests are run with a ghc version containing Cabal >= 3.10
+# See https://github.com/tweag/rules_haskell/issues/1871
+http_archive(
+    name = "Cabal",
+    build_file_content = """
+load("@rules_haskell//haskell:cabal.bzl", "haskell_cabal_library")
+haskell_cabal_library(
+    name = "Cabal",
+    srcs = glob(["Cabal/**"]),
+    verbose = False,
+    version = "3.6.3.0",
+    visibility = ["//visibility:public"],
+)
+    """,
+    sha256 = "f69b46cb897edab3aa8d5a4bd7b8690b76cd6f0b320521afd01ddd20601d1356",
+    strip_prefix = "cabal-gg-8220-with-3630",
+    urls = ["https://github.com/tweag/cabal/archive/refs/heads/gg/8220-with-3630.zip"],
+)
+
 load(
     "@bazel_tools//tools/build_defs/repo:git.bzl",
     "git_repository"
@@ -76,6 +85,20 @@ load(
 
 stack_snapshot(
     name = "stackage",
+    local_snapshot = "//:stack-snapshot.yaml",
+    components = {
+        "attoparsec": [
+            # attoparsec contains an internal library which is not exposed publicly,
+            # but required to build the public library, hence the declaration of
+            # those 2 components, as well as the explicit declaration of the
+            # dependency between them.
+            "lib",
+            "lib:attoparsec-internal",
+        ],
+    },
+    components_dependencies = {
+        "attoparsec": """{"lib:attoparsec": ["lib:attoparsec-internal"]}""",
+    },
     packages = [
         "async",
         "base",
@@ -89,6 +112,22 @@ stack_snapshot(
         "singletons-base",
         "stm",
         "text",
+        "transformers-compat"
     ],
-    snapshot = "lts-20.11",
-)
+
+    setup_deps = {
+        "async": ["@Cabal//:Cabal"],
+        "base": ["@Cabal//:Cabal"],
+        "bytestring": ["@Cabal//:Cabal"],
+        "choice": ["@Cabal//:Cabal"],
+        "containers": ["@Cabal//:Cabal"],
+        "constraints": ["@Cabal//:Cabal"],
+        "deepseq": ["@Cabal//:Cabal"],
+        "inline-c": ["@Cabal//:Cabal"],
+        "linear-base": ["@Cabal//:Cabal"],
+        "singletons-base": ["@Cabal//:Cabal"],
+        "stm": ["@Cabal//:Cabal"],
+        "text": ["@Cabal//:Cabal"],
+        "transformers-compat": ["@Cabal//:Cabal"],
+
+    },)
