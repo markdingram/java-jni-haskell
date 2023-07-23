@@ -1,0 +1,8 @@
+
+java_binary(
+    name = "main",
+    srcs = [ "src/main/java/fib/FibMain.java" ],
+    data = ["//fibjni:libfib.so"],
+    jvm_flags = ["-Djava.library.path=fibjni"],
+    main_class = "fib.FibMain",
+)

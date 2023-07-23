@@ -7,13 +7,13 @@ load(
 
 haskell_library(
     name = "lib",
-    srcs = ["FibJni.hs", "@openjdk//:jni_header", "@openjdk//:jni_md_header"],
-    deps = ["@stackage//:base", "@tweag_inline_java//jni:jni", "//fibhs:lib", "@openjdk//:lib"]
+    srcs = ["FibJni.hs"],
+    deps = ["@stackage//:base", "@tweag_inline_java//jni:jni", "//fibhs:lib"]
 )
 
 cc_binary(
     name = "libfib.so",
-    srcs = ["init.c", ":lib", "@openjdk//:jni_header"],
+    srcs = ["init.c"],
     deps = [":lib"],
     linkstatic = False,
     linkshared = True,
